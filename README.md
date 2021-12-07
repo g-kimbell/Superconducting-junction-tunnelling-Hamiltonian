@@ -1,5 +1,3 @@
-Project: GKTH_v0.6
-
 This project is a model for superconducting junctions based on tunnelling Hamiltonian Green functions.
 The code has been written by Graham Kimbell with support from Xavier Montiel on the theory aspects.
 
