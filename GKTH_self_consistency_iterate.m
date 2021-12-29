@@ -19,29 +19,27 @@ function[Deltas,layers,Deltas_itr,fs] = GKTH_self_consistency_iterate(p,layers)
 %
 
 nlayers=length(layers);
-maxItr=500;
+maxItr=750;
 iterate_factor=1; %Multiply the change by this each time. Might overshoot.
 Deltas=[layers.Delta_0];
 Deltas_itr=zeros(nlayers,maxItr);
 n=0;
 fs=zeros(1,maxItr);
 
-% First get the density grid. This shouldn't change between function calls
-[density_grid,compute_grid] = GKTH_ksubsample(p,layers);
-
 for resolution_factor = [1]
     p_temp=p;
-    p_temp.nkpoints=p.nkpoints/resolution_factor;
+    p_temp.nfinal=p.nfinal/resolution_factor;
+    p_temp.nradials=p.nradials/resolution_factor;
     rel_change = 1000;
     abs_change = 1000;
     rel_tol=p.rel_tolerance_self_consistency_iterate*10^(2*resolution_factor-2);
     abs_tol=p.abs_tolerance_self_consistency_iterate*10^(2*resolution_factor-2);
     while rel_change>rel_tol && norm(abs_change)>abs_tol && n<maxItr
-        [Fs_sums,~] = GKTH_Greens(p_temp,layers,density_grid=density_grid,compute_grid=compute_grid);
+        [Fs_sums,~] = GKTH_Greens_radial(p_temp,layers,layers_to_check=[1,2]);
         Deltas_iterate=[layers.lambda].*p_temp.T.*abs(Fs_sums)';
         abs_change=Deltas_iterate-Deltas;
         Deltas_new=Deltas+abs_change;
-        rel_change=norm(Deltas_iterate/Deltas - 1);
+        rel_change=norm(Deltas_iterate./Deltas - 1);
         temp=num2cell(Deltas_new); % This is silly but Matlab demands it
         [layers.Delta_0]=temp{:};
         Deltas=Deltas_new;

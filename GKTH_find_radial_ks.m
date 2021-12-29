@@ -43,7 +43,7 @@ arguments
 end
 
 if opts.just_use_layer~=0
-    nlayers=1;
+    nlayers=length(opts.just_use_layer);
     layers=layers(opts.just_use_layer);
 else
     nlayers=length(layers);
@@ -51,7 +51,7 @@ end
 
 temp=num2cell(zeros(nlayers,1));
 [layers.Delta_0]=temp{:};
-
+%p.ts=zeros(length(layers)-1);
 rs=zeros(p.ntest,p.nradials);
 eigenvalues=zeros(4*nlayers,p.ntest,p.nradials);
 

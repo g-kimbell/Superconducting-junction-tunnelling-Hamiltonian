@@ -10,6 +10,7 @@ function [jc,phase] = GKTH_critical_current(p,layers,opts)
 %       layer_to_vary : which layer to change the phase, default last
 %       initial_guess : initial estimate of critical phase
 %       maxCalcs      : maximum calculations in current calculation
+%       spin_current  : whether or not to return the spin-currents
 %
 %%% Outputs
 %   jc     :    the critical current
@@ -21,6 +22,7 @@ arguments
     opts.layer_to_vary=NaN;
     opts.initial_guess=1.5;
     opts.maxCalcs=500;
+    opts.spin_current=false;
 end
 
 % If no layer to vary set, make it the last layer
@@ -51,5 +53,10 @@ phase=mod(phase,2*pi);
 if phase>pi
     phase=phase-2*pi;
 end
-jc=-jc;
+if opts.spin_current
+    layers(opts.layer_to_vary).phi=phase;
+    jc = GKTH_Greens_current_radial(p,layers,maxCalcs=opts.maxCalcs);
+else
+    jc=-jc;
+end
 end

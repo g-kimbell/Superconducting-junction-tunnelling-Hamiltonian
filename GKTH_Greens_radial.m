@@ -17,7 +17,7 @@ function [Fs_sums,F_kresolved_matsum,k1s,k2s] = GKTH_Greens_radial(p,layers,opts
 %        verbose      : Whether or not to store and return the k-resolved 
 %                       anomalous Green function and the integrated values 
 %                       vs Matsubara frequency
-%       just_use_layer: Define which layer(s) to use for the radial k-space
+%     layers_to_check : Define which layer(s) to use for the radial k-space
 %                       sub-sampling
 %
 %%% Outputs:
@@ -36,18 +36,19 @@ arguments
     p
     layers
     opts.maxCalcs=500;
-    opts.maxMatsubara=1e7; % before 1e6
+    opts.maxMatsubara=1e8; % before 1e6
     opts.verbose=false;
-    opts.just_use_layer=1;
+    opts.layers_to_check=[1];
 end
 maxCalcs=opts.maxCalcs;
-maxMatsubara=opts.maxMatsubara;
+%maxMatsubara=opts.maxMatsubara;
+maxMatsubara=1e6+1e4/p.T;
 verbose=opts.verbose;
 
 % Initialising values
 nlayers=length(layers);
 
-[k1s,k2s,~,~,area_factor] = GKTH_find_radial_ks(p,layers,just_use_layer=opts.just_use_layer);
+[k1s,k2s,~,~,area_factor] = GKTH_find_radial_ks(p,layers,width=0.05,just_use_layer=opts.layers_to_check);
 
 [nrs,nangles]=size(k1s);
 
@@ -55,7 +56,8 @@ D_factors=zeros(nlayers,nrs,nangles);
 for i=1:nlayers
     L=layers(i);
     L.Delta_0=1;
-    D_factors(i,:,:)=1./GKTH_Delta_k(p,L,k1s,k2s);
+    %D_factors(i,:,:)=1./GKTH_Delta_k(p,L,k1s,k2s);
+    D_factors(i,:,:)=GKTH_Delta_k(p,L,k1s,k2s); %is this what it's meant to be?
 end
 D_factors(isinf(D_factors)|isnan(D_factors))=0;
 
@@ -99,6 +101,8 @@ prev_tol_check=0;
 stopped_changing=0;
 for itr=L+1:maxCalcs
     % Calculate all the differentials
+    layer=opts.layers_to_check(mod(itr,length(opts.layers_to_check))+1);
+    weights(1:itr-1)=ksums(1:itr-1,layer);
     diffs(1:itr-2)=(diff(weights(1:itr-1)));
     ddiffs(1:itr-2)=(gradient(diffs(1:itr-2)));
     matsdiffs(1:itr-2)=diff(matsubara_freqs(1:itr-1));
@@ -114,7 +118,8 @@ for itr=L+1:maxCalcs
     new_ksum=calculate_ksum(new_n);
     % Stick this into ksum array
     ksums(1:itr,:)=[ksums(1:mats_idx,:);new_ksum;ksums(mats_idx+1:itr-1,:)];
-    weights(1:itr)=[weights(1:mats_idx,:);sum(abs(new_ksum));weights(mats_idx+1:itr-1)];
+    %weights(1:itr)=sum(abs(ksums(1:itr,:))./sum(abs(ksums(1:itr,:))),2);
+    %weights(1:itr)=[weights(1:mats_idx,:);sum(abs(new_ksum));weights(mats_idx+1:itr-1)];
 
     % If verbose, track the integral every step
     if verbose == true
@@ -123,8 +128,9 @@ for itr=L+1:maxCalcs
     end
     % Every 10 iterations check for convergence
     if mod(itr,10)==0
-        tol_check = trapz(matsubara_freqs(1:itr), weights(1:itr)) + 0.5*weights(1);
-        if abs((tol_check-prev_tol_check)/prev_tol_check) < p.rel_tolerance_Greens
+        tol_check = trapz(matsubara_freqs(1:itr), abs(ksums(1:itr,:)) + 0.5*abs(ksums(1,:)));
+        tol_check = tol_check(opts.layers_to_check);
+        if norm((tol_check-prev_tol_check)./prev_tol_check) < p.rel_tolerance_Greens
             stopped_changing=stopped_changing+1;
             if stopped_changing==2
                 break
@@ -178,7 +184,7 @@ function [Fs_ksum] = calculate_ksum(n)
     for i=1:nlayers
         Fs_ksum(i)= sum(area_factor .* squeeze(D_factors(i,:,:) .* (Fupdowns(i,:,:) - Fdownups(i,:,:))),'all');
         if verbose==true
-            F_kresolved(itr,i,:,:) = squeeze(D_factors(i,:,:).*(Fupdowns(i,:,:) - Fdownups(i,:,:)));
+            F_kresolved(itr,i,:,:) = squeeze(D_factors(i,:,:) .* (Fupdowns(i,:,:) - Fdownups(i,:,:))); %
         end
     end
     if verbose==true

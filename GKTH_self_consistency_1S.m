@@ -48,7 +48,7 @@ function[residual] = GKTH_self_consistency_1S_residual(Delta_0_fits)
             layers(i).Delta_0=Delta_0_fit;
         end
         %[Fs_sums,~] = GKTH_Greens(p,layers,density_grid=density_grid,compute_grid=compute_grid);
-        [Fs_sums,~] = GKTH_Greens_radial(p,layers,just_use_layer=layers_to_check);
+        [Fs_sums,~] = GKTH_Greens_radial(p,layers);
         idx=layers_to_check(1);
         residual(k)=(layers(idx).lambda*p.T*abs(Fs_sums(idx))-Delta_0_fit);
         residual_history=[residual_history;[Delta_0_fit,residual(k)]];

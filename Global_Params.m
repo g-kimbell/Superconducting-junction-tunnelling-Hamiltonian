@@ -7,7 +7,7 @@ classdef Global_Params
     
     properties
         % Temperature in eV
-        T = 0.004308666631073; % this is 50 K
+        T = 1*kB; % this is 1 K
         
         % Global applied field strength
         h = 0;
@@ -96,7 +96,7 @@ classdef Global_Params
         
         function k1 = get.k1(obj)
             scale=obj.BZ_multiplier*pi/obj.a;
-            if obj.lattice_symmetry == "mm" || obj.lattice_symmetry == "mm"
+            if obj.lattice_symmetry == "mm" || obj.lattice_symmetry == "4mm"
                 ks=scale*linspace((1/(2*obj.nkpoints)),(1-1/(2*obj.nkpoints)),obj.nkpoints);
                 [k1,~]=meshgrid(ks,ks);
 %                 noisify=(rand(obj.nkpoints)-0.5)*scale/(obj.nkpoints);
@@ -117,7 +117,7 @@ classdef Global_Params
         
         function k2 = get.k2(obj)
             scale=obj.BZ_multiplier*pi/obj.a;
-            if obj.lattice_symmetry == "mm" || obj.lattice_symmetry == "mm"
+            if obj.lattice_symmetry == "mm" || obj.lattice_symmetry == "4mm"
                 ks=scale*linspace((1/(2*obj.nkpoints)),(1-1/(2*obj.nkpoints)),obj.nkpoints);
                 [~,k2]=meshgrid(ks,ks);
 %                 noisify=(rand(obj.nkpoints)-0.5)*scale/(obj.nkpoints);
@@ -137,7 +137,7 @@ classdef Global_Params
         end
         
         function k_step_size = get.k_step_size(obj)
-            if obj.use_mm_symmetry == true || obj.use_4mm_symmetry == true
+            if obj.lattice_symmetry == "mm" || obj.lattice_symmetry == "4mm"
                 k_step_size = obj.BZ_multiplier*pi/(obj.a*obj.nkpoints);
             else
                 k_step_size = 2*obj.BZ_multiplier*pi/(obj.a*obj.nkpoints);

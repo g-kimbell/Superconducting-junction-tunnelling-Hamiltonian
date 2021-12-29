@@ -25,10 +25,12 @@ arguments
     opts.maxCalcs=500;
     opts.maxMatsubara=1e7; % before 1e6
     opts.verbose=false;
+    opts.layers_to_check=[1,3];
 end
 include_spin=opts.include_spin;
 maxCalcs=opts.maxCalcs;
 maxMatsubara=opts.maxMatsubara;
+maxMatsubara=1e6+1e4/p.T;
 verbose=opts.verbose;
 
 % Initialising values
@@ -38,7 +40,7 @@ if nlayers<2
 end
 ninterfaces=nlayers-1+p.cyclic_tunnelling;
 
-[k1s,k2s,new_rs,radial_angles,area_factor] = GKTH_find_radial_ks(p,layers,width=abs(p.ts(1))^0.5);
+[k1s,k2s,new_rs,radial_angles,area_factor] = GKTH_find_radial_ks(p,layers,width=abs(p.ts(1))^0.5,just_use_layer=opts.layers_to_check);
 
 [nrs,nangles]=size(k1s);
 % Prefactor             2      e       t    T      (2pi/a)^2            /hbar
