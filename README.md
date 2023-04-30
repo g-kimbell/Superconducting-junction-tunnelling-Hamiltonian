@@ -12,7 +12,7 @@ conversion at the S/F interfaces, as well as more complex behaviour such as comp
 ferromagnetic junctions and anomalous Josephson currents in junctions with finite spin chirality.
 
 Different junctions can be quickly defined, and then the superconducting properties calculated. The superconducting gap can be solved
-self-consistently. From thi the critical temperatre and critical field (both first order and second order) can be found for junctions.
+self-consistently. From this the critical temperatre and critical field (both first order and second order) can be found for junctions.
 
 Additionally, the critical current can be calculated through the structure as a function of the phase difference of the superconductors,
 and there are additional tools for quickly finding 0-pi transitions as a function of ferromagnet angles.
